@@ -3,7 +3,6 @@
 /**
  * @param {Object} state
  * @param {Object[]} actions
- *
  * @return {Object[]}
  */
 function transformStateWithClones(state, actions) {
@@ -16,26 +15,37 @@ function transformStateWithClones(state, actions) {
         currentState = {};
         break;
 
-      case 'addProperties':
-        currentState = { ...currentState, ...action.extraData };
+      case 'addProperties': {
+        const extra =
+          action.extraData && typeof action.extraData === 'object'
+            ? action.extraData
+            : {};
+        currentState = { ...currentState, ...extra };
         break;
+      }
 
-      case 'removeProperties':
+      case 'removeProperties': {
+        const keys = Array.isArray(action.keysToRemove)
+          ? action.keysToRemove
+          : [];
         currentState = { ...currentState };
-
-        for (const key of action.keysToRemove) {
+        for (const key of keys) {
           delete currentState[key];
         }
         break;
+      }
 
       default:
-        throw new Error(`Unknown action type: ${action.type}`);
+        throw new Error(`Неизвестный тип действия: ${action.type}`);
     }
 
-    history.push(currentState);
+    history.push({ ...currentState }); // Гарантированно новый клон
   }
 
   return history;
 }
+
+module.exports = transformStateWithClones;
+
 
 module.exports = transformStateWithClones;
